@@ -74,7 +74,7 @@ export class LocalizacaoService {
             const resposta = await lastValueFrom(
                 this.httpService.get('https://geocoding-api.open-meteo.com/v1/search',{
                     params: {
-                        nome: cidade.trim(),
+                        name: cidade.trim(),
                         count:1,
                         language: 'pt',
                         countryCode: 'BR'
@@ -103,8 +103,26 @@ export class LocalizacaoService {
             ){
                 throw erro;
             }
-            throw new ServiceUnavailableException('Não foi possível consultar o serviço de localização',);
+            throw new ServiceUnavailableException('Não foi possível consultar o serviço de localização',); //erro status code 503
         }
+    }
+
+    // Função para buscar as coordenadas pelo CEP
+    async buscaCepComCoordenadas(cep: string){
+        // Primeiro vamos buscar o CEP 
+        const endereco = await this.buscarCep(cep);
+        // Depois utilizamos a cidade retornada para consultar a latitude e a longitude
+        const localizacao = await this.buscarCidade(endereco.cidade);
+        // montamos uma nova resposta
+        return {
+            cep: endereco.cep,
+            logradouro: endereco.logradouro,
+            bairro: endereco.bairro,
+            cidade: endereco.cidade,
+            estado: endereco.estado,
+            latitude: localizacao.latitude,
+            longitude: localizacao.longitude
+        };
     }
 
     }
